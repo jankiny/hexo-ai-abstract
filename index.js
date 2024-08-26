@@ -30,9 +30,15 @@ hexo.extend.filter.register('after_post_render', async function (data) {
         return data;
     }
 
-    log.info(`生成文章 ${data.title} 的AI摘要`);
     const path = this.source_dir + data.source;
     const frontMatter = fm.parse(await fs.readFile(path));
+
+    if (frontMatter.tags && frontMatter.tags.some(tag => config.ignoreTag.includes(tag))) {
+        log.info(`文章 ${data.title} 的标签包含于 ignoreTag 列表，跳过AI摘要生成`);
+        return data;
+    }
+
+    log.info(`生成文章 ${data.title} 的AI摘要`);
     frontMatter.excerpt = data.excerpt = await ai(config.apiKey, config.apiUrl, config.model, content, config.prompt, config.maxTokens);
     await fs.writeFile(path, `---\n${fm.stringify(frontMatter)}`);
 
