@@ -1,6 +1,6 @@
 {
   "name": "hexo-ai-abstract",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Hexo plugin to generate AI-based abstracts for your blog posts. Fix hexo-ai-excerpt.",
   "main": "index.js",
   "scripts": {

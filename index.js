@@ -13,10 +13,18 @@ const config = hexo.config.hexo_ai_abstract;
 
 hexo.extend.filter.register('after_post_render', async function (data) {
 
-    if (config.default_enable) data.aiabstract = data.aiabstract || true;
-    if (!data.aiabstract || data.excerpt || data.description) return data;
+    if (!config.enable) return data;
+
+    if (config.test) {
+        // 如果test模式启用，则仅当 data.aiabstract 为 true 时才生成摘要
+        if (!data.aiabstract || data.excerpt || data.description) return data;
+    } else {
+        // 如果 test 模式未启用，则对所有 data.excerpt 为空的文章生成摘要
+        if (!data.aiabstract && (data.excerpt || data.description)) return data;
+    }
 
     const content = strip(data.content, config.ignoreEl);
+
     if (content.length > config.maxTokens) {
         log.info(`文章 ${data.title} 超过 maxTokens 限制`);
         return data;
