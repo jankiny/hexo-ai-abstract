@@ -50,6 +50,27 @@ excerpt: >-
 ---
 ```
 
+### 1. Ignore by tag
+
+For some personal post, e.g. encrypted posts, uploading the post's content might be undesirable. 
+To address this, hexo-ai-abstract offers a feature to "Ignore Files via Tags."
+
+You can filter out posts that you don't want to process by tagging them accordingly. 
+For example:
+```markdown
+title: Post Title
+tags:
+  - secret
+```
+Then, in your _config.yml, you can specify the tags to ignore:
+```yaml
+hexo_ai_abstract:
+  ignoreTag: [
+    'secret', '...'
+  ]
+```
+Any post tagged with a tag listed in ignoreTag will be skipped during the abstract generation process.
+
 ## Acknowledgement
 
 We sincerely thank [hexo-ai-excerpt](https://github.com/rootlexme/hexo-ai-excerpt) and [hexo-ai-summaries](https://github.com/tardis-ksh/hexo-ai-summaries) for their pioneering work, which served as an inspiration for the creation of hexo-ai-abstract.
