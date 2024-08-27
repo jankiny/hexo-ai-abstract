@@ -1,6 +1,19 @@
-# hexo-ai-abstract
+<div align="center">
+<a name="readme-top"></a>
+
+<h1> hexo-ai-abstract </h1>
 
 A Hexo plugin to generate AI-based abstracts for your blog posts. Fix hexo-ai-excerpt.
+
+[![CI status][github-action-image]](https://github.com/jankiny/hexo-ai-abstract/actions/workflows/npm-publish.yml)
+[![NPM version][npm-image]](https://npmjs.org/package/hexo-ai-abstract)
+[![NPM downloads][download-image]](https://npmjs.org/package/hexo-ai-abstract)
+[![license](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+</div>
+
+[github-action-image]: https://github.com/jankiny/hexo-ai-abstract/actions/workflows/npm-publish.yml/badge.svg
+[npm-image]: https://img.shields.io/npm/v/hexo-ai-abstract.svg?style=flat-square
+[download-image]: https://img.shields.io/npm/dm/hexo-ai-abstract.svg?style=flat-square
 
 ## Features
 
