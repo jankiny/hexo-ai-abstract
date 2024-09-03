@@ -23,7 +23,7 @@ hexo.extend.filter.register('after_post_render', async function (data) {
         if (data.aiAbstract && data.aiAbstract.trim() !== '') return data;
 
         // Only continue if AI Abstract is set and empty
-        if (!data.aiAbstract && config.enable === 'on')  return data;
+        if (data.aiAbstract === undefined && config.enable === 'on')  return data;
 
         const path = this.source_dir + data.source;
         const frontMatterString = await fs.readFile(path);

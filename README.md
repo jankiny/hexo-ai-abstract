@@ -17,12 +17,11 @@ A Hexo plugin to generate AI-based abstracts for your blog posts. Fix hexo-ai-ex
 
 ## Features
 
- - [x] Base: AI Abstract Generation (OpenAI API)
+ - [x] Core Functionality: AI Abstract Generation (using OpenAI API)
  - [x] Ignore Files via Tags
  - [x] Ignore Files via Title
  - [x] Ignore Files via Attribute
- - [x] Inject to Content
- - [ ] Cache
+ - [x] Content Injection
 
 
 ## Installation
@@ -70,13 +69,21 @@ aiabstract: >-
 
 ### 1. Test your `_config.yml`
 
+You can set "enable" to "on" to test whether the plugin is functioning.
+```yaml
+hexo_ai_abstract:
+  enable: 'on'
+```
+
+When "enable" is set to either "on" or "auto," the visualization results of the decision tree are as follows.
+
 ```mermaid
   graph TD;
-      A(aiAbstract)-->B1(Exist);
-      A-->B2(Not Exist);
+      A(aiAbstract)-->B1(defined);
+      A-->B2(undefined);
       
-      B1-->C1(Not Empty);
-      B1-->C2(Empty);
+      B1-->C1(not null);
+      B1-->C2(null);
 
       C1-->Z1;
       C2-->Z0;
@@ -96,12 +103,15 @@ aiabstract: >-
 
 ```
 
+Specifically, when "enable" is set to "on," the AI summary generation will only be executed if the `aiAbstract` attribute of the post exists and is empty. 
+Consequently, you can test the plugin's availability by adding the `aiAbstract` attribute to a post and leaving it empty.
+
 ### 2. Ignores
 
 For some personal post, e.g. encrypted posts, uploading the post's content might be undesirable. 
-To address this, `hexo-ai-abstract` offers a feature to "Ignore Files via Tags", "Ignore Files via Title" and "Ignore Files via Attribute".
+To address this, `hexo-ai-abstract` offers features to "Ignore Files via Tags", "Ignore Files via Title" and "Ignore Files via Attribute".
 
-
+**Ignore Files via Tags**
 
 You can filter out posts that you don't want to process by tagging them accordingly. 
 For example:
@@ -113,11 +123,80 @@ tags:
 Then, in your _config.yml, you can specify the tags to ignore:
 ```yaml
 hexo_ai_abstract:
-  ignoreTag: [
-    'secret', '...'
-  ]
+  ignores:
+    byTag: [ 'secret', '...' ]
 ```
 Any post tagged with a tag listed in ignoreTag will be skipped during the abstract generation process.
+
+**Ignore Files via Title**
+
+Some plugins and software may include post templates.
+However, generating summaries from the content of these templates is generally undesirable.
+
+To address this, the option to "Ignore Files via Title" has been introduced.
+For example, using the "insect template" in Obsidian, if the post title is set to {{title}}:
+```markdown
+---
+title: '{{title}}'
+toc: true
+recommend: 1
+keywords: '{{title}}'
+uniqueId: '{{date}} {{time}}/{{title}}.html'
+...
+```
+You can specify in the `_config.yml` to ignore posts with the title "{{title}}":
+```yaml
+hexo_ai_abstract:
+  ignores:
+    byTitle: [ '{{title}}' ]
+```
+After that, the plugin will not generate AI abstract for these posts.
+
+**Ignore Files via Attribute**
+
+In the plugin `hexo-blog-encrypt`, you can encrypt posts not only by using tags but also by adding a `password` in the post attributes. 
+Therefore, we have also incorporated the corresponding functionality.
+
+For example, if a password is added to a post:
+```markdown
+---
+...
+comments: false
+password: pa33w@rd
+...
+```
+You should also specify the password in the `_config.yml`:
+```yaml
+hexo_ai_abstract:
+  ignores:
+    byAttribute: [ 'password' ]
+```
+Subsequently, the plugin will ignore this post.
+
+### 3. Content Injection
+
+In our initial version, the generated AI summaries were stored in the `excerpt` attribute. 
+However, if there is content in the excerpt, the content before the `<!-- more -->` will not be displayed as an excerpt on the homepage, and the excerpt content cannot be rendered within the main body.
+
+To address this issue, the `hexo-ai-abstract` plugin has implemented the following changes after `v1.1.0`:
+ - The generated AI abstract is now stored in the `aiAbstract` attribute.
+ - An injection feature has been added: the content from `aiAbstract` is injected into the main content.
+
+This functionality requires you to add configuration settings in the `_config.yml`:
+```yaml
+hexo_ai_abstract:
+  inject:
+    anchor: '<!-- more -->'
+    front: False
+```
+
+The plugin will first match the content in `inject.anchor` 
+and then determine whether to inject the AI summary content before or after `inject.anchor` 
+based on the `inject.front` setting.
+
+Taking `anchor: '<!-- more -->'` as an example, 
+if `front: True`, the AI summary will be generated before the `<!-- more -->` tag. 
+Conversely, if `front: False`, the AI summary will be generated after the `<!-- more -->` tag.
 
 ## Acknowledgement
 
