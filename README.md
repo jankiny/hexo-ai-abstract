@@ -19,6 +19,9 @@ A Hexo plugin to generate AI-based abstracts for your blog posts. Fix hexo-ai-ex
 
  - [x] Base: AI Abstract Generation (OpenAI API)
  - [x] Ignore Files via Tags
+ - [x] Ignore Files via Title
+ - [x] Ignore Files via Attribute
+ - [x] Inject to Content
  - [ ] Cache
 
 
@@ -33,18 +36,21 @@ npm install hexo-ai-abstract
 Put `hexo_ai_abstract` config in your `hexo/_config.yml`.
 ```yaml
 hexo_ai_abstract:
-  enable: true
-  test: false  # If true, an abstract will only be generated when the `aiabstract` property in the post is set to true
-  apiKey: 'your_api_key'
-  apiUrl: 'https://api.chatanywhere.tech/v1'
+  enable: 'on' # ['auto', 'on', 'off']
+  apiKey: 'your-api-keys here'
+  apiUrl: 'https://api.openai.com/v1'
   model: 'gpt-4o-mini'
   prompt: 'You are a highly skilled AI trained in language comprehension and summarization. I would like you to read the text delimited by triple quotes and summarize it into a concise abstract paragraph. Aim to retain the most important points, providing a coherent and readable summary that could help a person understand the main points of the discussion without needing to read the entire text. Please avoid unnecessary details or tangential points. Only give me the output and nothing else. Do not wrap responses in quotes. Respond in the Chinese language.'
   ignoreEl: [
     'table', 'pre', 'figure'
   ]
-  ignoreTag: [
-    'about', 'encrypt'
-  ]
+  ignores:
+    byTitle: [ '{{title}}' ]
+    byTag: [ 'about', 'encrypt' ]
+    byAttribute: ['password']
+  inject: 
+    anchor: '<!-- more -->'
+    front: True 
   maxTokens: 5000
 ```
 
@@ -57,16 +63,30 @@ The generated abstract will look like this:
 title: Your Post Title
 tags:
   - notencrypt
-aiabstract: true # Only required if test is true; otherwise, it can be omitted
-excerpt: >-
+aiabstract: >-
   Generated Abstract.
 ---
 ```
 
-### 1. Ignore by tag
+### 1. Test your `_config.yml`
+
+```mermaid
+  graph TD;
+      A(aiAbstract)-->B(Exist);
+      A-->C(Not Exist);
+      
+      B-->D(Not Empty);
+      B-->E(Empty);
+      
+      C-->D;
+```
+
+### 2. Ignores
 
 For some personal post, e.g. encrypted posts, uploading the post's content might be undesirable. 
-To address this, hexo-ai-abstract offers a feature to "Ignore Files via Tags."
+To address this, `hexo-ai-abstract` offers a feature to "Ignore Files via Tags", "Ignore Files via Title" and "Ignore Files via Attribute".
+
+
 
 You can filter out posts that you don't want to process by tagging them accordingly. 
 For example:

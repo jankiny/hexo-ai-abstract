@@ -12,35 +12,74 @@ const fm = require('hexo-front-matter');
 const config = hexo.config.hexo_ai_abstract;
 
 hexo.extend.filter.register('after_post_render', async function (data) {
+    try {
+        // Ensure that config exists
+        if (!config || !config.enable) return data;
 
-    if (!config.enable) return data;
+        // Check if summaries are enabled
+        if (config.enable === 'off') return data;
 
-    if (config.test) {
-        // 如果test模式启用，则仅当 data.aiabstract 为 true 时才生成摘要
-        if (!data.aiabstract || data.excerpt || data.description) return data;
-    } else {
-        // 如果 test 模式未启用，则对所有 data.excerpt 为空的文章生成摘要
-        if (!data.aiabstract && (data.excerpt || data.description)) return data;
-    }
+        // Redundant check: If AI Abstract already exists
+        if (data.aiAbstract && data.aiAbstract.trim() !== '') return data;
 
-    const content = strip(data.content, config.ignoreEl);
+        // Only continue if AI Abstract is set and empty
+        if (!data.aiAbstract && config.enable === 'on')  return data;
 
-    if (content.length > config.maxTokens) {
-        log.info(`文章 ${data.title} 超过 maxTokens 限制`);
+        const path = this.source_dir + data.source;
+        const frontMatterString = await fs.readFile(path);
+        const frontMatter = fm.parse(frontMatterString);
+
+        if (frontMatter.tags && frontMatter.tags.some(tag => config.ignores.byTag.includes(tag))) {
+            log.info(`hexo-ai-abstract: 文章 ${data.title} 的标签包含于 ignoreTag (${config.ignores.byTag}) 列表，跳过AI摘要生成`);
+            return data;
+        }
+        if (frontMatter.title && config.ignores.byTitle.includes(frontMatter.title)) {
+            log.info(`hexo-ai-abstract: 文章 ${data.title} 的标题包含于 ignoreTitle (${config.ignores.byTitle}) 列表，跳过AI摘要生成`);
+            return data;
+        }
+        if (config.ignores.byAttribute.some(attr => frontMatter[attr] !== undefined)) {
+            log.info(`hexo-ai-abstract: 文章 ${data.title} 的属性包含于 ignoreAttribute (${config.ignores.byAttribute}) 列表 ，跳过AI摘要生成`);
+            return data;
+        }
+
+        const content = strip(data.content, config.ignoreEl);
+
+        if (typeof content === 'string' && content.length > config.maxTokens) {
+            log.info(`hexo-ai-abstract: 文章 ${data.title} 超过 maxTokens 限制`);
+            return data;
+        }
+
+        log.info(`hexo-ai-abstract: 生成文章 ${data.title} 的AI摘要`);
+        frontMatter.aiAbstract = data.aiAbstract = await ai(config.apiKey, config.apiUrl, config.model, content, config.prompt, config.maxTokens);
+        await fs.writeFile(path, `---\n${fm.stringify(frontMatter)}`);
+
+        return data;
+    } catch (error) {
+        log.error(`hexo-ai-abstract: 处理文章 ${data.title} 时出错: ${error.message}`);
         return data;
     }
-
-    const path = this.source_dir + data.source;
-    const frontMatter = fm.parse(await fs.readFile(path));
-
-    if (frontMatter.tags && frontMatter.tags.some(tag => config.ignoreTag.includes(tag))) {
-        log.info(`文章 ${data.title} 的标签包含于 ignoreTag 列表，跳过AI摘要生成`);
-        return data;
-    }
-
-    log.info(`生成文章 ${data.title} 的AI摘要`);
-    frontMatter.excerpt = data.excerpt = await ai(config.apiKey, config.apiUrl, config.model, content, config.prompt, config.maxTokens);
-    await fs.writeFile(path, `---\n${fm.stringify(frontMatter)}`);
-
-    return data;
 });
+
+hexo.extend.filter.register('before_post_render', function (data) {
+    try {
+        if (!data.aiAbstract || data.aiAbstract.trim() === '') return data;
+
+        const aiAbstractContent = '**AI导读：**' + data.aiAbstract;
+        const newContent = config.inject.front ? `\n\n${aiAbstractContent}\n\n${config.inject.anchor}` : `${config.inject.anchor}\n\n${aiAbstractContent}\n\n`
+
+        if (typeof data.content === 'string') {
+            const anchorPattern = new RegExp(escapeRegExp(config.inject.anchor), 'g');
+            data.content = data.content.replace(anchorPattern, newContent);
+            // log.info(data.content);
+        }
+        return data;
+    } catch (error) {
+        log.error(`hexo-ai-abstract: 处理文章 ${data.title} 前渲染时出错: ${error.message}`);
+        return data;
+    }
+});
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
