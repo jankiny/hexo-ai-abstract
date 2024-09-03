@@ -72,13 +72,28 @@ aiabstract: >-
 
 ```mermaid
   graph TD;
-      A(aiAbstract)-->B(Exist);
-      A-->C(Not Exist);
+      A(aiAbstract)-->B1(Exist);
+      A-->B2(Not Exist);
       
-      B-->D(Not Empty);
-      B-->E(Empty);
-      
-      C-->D;
+      B1-->C1(Not Empty);
+      B1-->C2(Empty);
+
+      C1-->Z1;
+      C2-->Z0;
+
+      B2-->D1(enable is 'auto');
+      B2-->D2(enable is 'on');
+
+      D1-->Z0;
+      D2-->Z2;
+
+      Z0(Generate aiAbstract);
+      style Z0 color:#33aa33
+      Z1(Already exists, not Generate);
+      style Z1 color:#aa3333
+      Z2(Not Generate);
+      style Z2 color:#aa3333
+
 ```
 
 ### 2. Ignores
