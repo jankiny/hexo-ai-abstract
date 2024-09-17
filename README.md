@@ -53,6 +53,10 @@ hexo_ai_abstract:
   maxTokens: 5000
 ```
 
+**Note: ** 
+If `enable` is set to 'on', it indicates that the plugin is in test mode. 
+For posts that are expected to generate AI abstract, the `aiAbstract` property should be added to their Front-Matter and must be ensured to be empty.
+
 This plugin will upload `data.content` to the AI service to generate an abstract when you save a post without `excerpt` [Front-Matter](https://hexo.io/zh-cn/docs/front-matter).
 The abstract will then be used to construct the excerpt.
 
@@ -69,7 +73,7 @@ aiabstract: >-
 
 ### 1. Test your `_config.yml`
 
-You can set "enable" to "on" to test whether the plugin is functioning.
+You can set "enable" to "on" to test whether the plugin is working.
 ```yaml
 hexo_ai_abstract:
   enable: 'on'
