@@ -53,7 +53,7 @@ hexo_ai_abstract:
   maxTokens: 5000
 ```
 
-**Note: ** 
+**Note:**
 If `enable` is set to 'on', it indicates that the plugin is in test mode. 
 For posts that are expected to generate AI abstract, the `aiAbstract` property should be added to their Front-Matter and must be ensured to be empty.
 
